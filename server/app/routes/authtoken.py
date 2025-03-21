@@ -1,30 +1,39 @@
-from flask import Blueprint, request, jsonify, current_app
-import jwt
-import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-from app.routes.users import get_users_db
+from flask import Blueprint, request, jsonify, current_app, make_response
+import jwt, datetime
+from werkzeug.security import check_password_hash
+from app.controllers.users_controller import get_user
 
-bp = Blueprint('auth', __name__)
-
-users_db = get_users_db()
+bp = Blueprint('authtoken', __name__)
 
 @bp.route('', methods=['POST'])
 def login():
     """User login"""
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    password = data.pop('password')
 
-    user = users_db.get(email)
-    if not user:
-        return jsonify({'message': 'User not found.'}), 404
+    user = get_user(data)
 
     if not check_password_hash(user['password'], password):
-        return jsonify({'message': 'Incorrect password.'}), 401
-
+        return jsonify({'message': 'Invalid credentials'}), 401
+    
     token = jwt.encode({
-        'email': email,
-        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=3)
-    }, current_app.config['SECRET_KEY'], algorithm="HS256")
+        'iss': 'project-submission-backend',
+        'uuid': user['uuid'],
+        'email': user['email'],
+        'iat': datetime.datetime.now(datetime.timezone.utc),
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7),
+    }, current_app.config['JWT_SECRET'], algorithm="HS256")
 
-    return jsonify({'token': token}), 200
+    response = make_response(jsonify({'message': 'Login successful'}))
+
+    # Set the token in the cookie
+    response.set_cookie(
+        key='access_token',
+        value=token,
+        httponly=True,           # Prevent JavaScript access (XSS protection)
+        secure=False,             # Use HTTPS in production
+        samesite='Lax',          # Protect against CSRF
+        max_age=60 * 60 * 24 * 7  # Expiry time (7 days)
+    )
+
+    return response, 200

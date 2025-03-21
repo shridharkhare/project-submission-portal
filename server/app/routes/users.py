@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import request, Blueprint, jsonify
 from app.utils.auth_middleware import token_required
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
+from app.controllers.users_controller import create_user
 
 bp = Blueprint('users', __name__)
 
@@ -9,25 +10,43 @@ users_db = {}
 
 @bp.route('', methods=['POST'])
 def register():
-    """User registration"""
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    response = request.get_json()
 
-    if email in users_db:
+    email, password, name, role = (response.get(key) for key in ('email', 'password', 'name', 'role'))
+    branch = roll_no = year = semester = div = None
+
+    if not email or not password or not role:
+        return jsonify({'message': 'missing one or more info'}), 400
+
+    if role == 'student' or role == 'admin':
+        branch, roll_no, year, semester, div = (response.get(key) for key in ('branch', 'roll_no', 'year', 'semester', 'div'))
+    
+    data = {
+        'email': email,
+        'password': password,
+        'name': name,
+        'role': role,
+        'branch': branch,
+        'roll_no': roll_no,
+        'year': year,
+        'semester': semester,
+        'div': div
+    }
+
+    data['password'] = generate_password_hash(data.pop('password'), method='pbkdf2:sha256')
+    
+    requests = create_user(data)
+
+    if requests['error']:
         return jsonify({'message': 'User already exists.'}), 400
 
-    hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-    users_db[email] = {'email': email, 'password': hashed_password}
-
     return jsonify({'message': 'User registered successfully.'}), 201
+    
 
-@bp.route('', methods=['GET'])
+@bp.route('/me', methods=['GET'])
 @token_required
 def get_users(current_user):
     """Fetch users (protected route)"""
-    return jsonify({'users': list(users_db.keys())}), 200
-
-# Export users_db
-def get_users_db():
-    return users_db
+    # send dictionary of user in json
+    current_user.pop('password')
+    return jsonify(current_user), 200
