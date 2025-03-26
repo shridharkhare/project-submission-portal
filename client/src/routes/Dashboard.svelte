@@ -16,7 +16,7 @@
 
   const getClassroomData = async () => {
     const response = await fetch(
-      `${import.meta.env.VITE_SERVER_URL}/api/v1/g_classroom`,
+      `${import.meta.env.VITE_SERVER_URL}/api/v1/g_classrooms`,
       {
         method: "GET",
         credentials: "include",

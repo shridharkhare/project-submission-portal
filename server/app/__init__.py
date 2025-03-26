@@ -15,7 +15,7 @@ def create_app():
     # print(app.config)
 
     # Import and register blueprints
-    from app.routes import welcome, authtoken, users, projects
+    from app.routes import welcome, authtoken, users, projects, g_classrooms
     
     # Initialize Supabase
     app.supabase = create_client(app.config["SUPABASE_URL"], app.config["SUPABASE_KEY"])
@@ -25,6 +25,7 @@ def create_app():
     app.register_blueprint(authtoken.bp, url_prefix='/api/v1/authtoken')
     app.register_blueprint(users.bp, url_prefix='/api/v1/users')
     app.register_blueprint(projects.bp, url_prefix='/api/v1/projects')
+    app.register_blueprint(g_classrooms.bp, url_prefix='/api/v1/g_classrooms')
 
     # Register blueprints to be added later
     # app.register_blueprint(classes.bp, url_prefix='/api/v1/classes')
