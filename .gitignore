@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+client/package-lock.json
 
 # Editor directories and files
 .vscode/*
@@ -39,7 +40,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+server/lib/
 lib64/
 parts/
 sdist/
