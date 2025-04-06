@@ -5,4 +5,5 @@
   -moz-osx-font-smoothing: grayscale;
 	
   background: url('./assets/background.svg') no-repeat center center fixed;
+  background-size: cover;
 }

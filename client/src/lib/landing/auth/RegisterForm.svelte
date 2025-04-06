@@ -19,12 +19,6 @@
 
   let role = $state("student");
 
-  let branch = $state("CE");
-  let semester = $state(1);
-  let year = $derived(Math.ceil(semester / 2));
-  let division = $state("A");
-  let rollNumber = $state(1);
-
   let password = $state({
     value: "",
     error: "",
@@ -145,14 +139,8 @@ const checkEmailConstraints = async () => {
       email: email.value,
       name: name.value,
       role: role,
-      branch: branch,
-      semester: semester,
-      year: year,
-      division: division,
-      rollNumber: rollNumber,
       password: password.value,
     };
-
 
     try {
       svelteState.loading = true;
@@ -217,85 +205,6 @@ const checkEmailConstraints = async () => {
     placeholder="Enter your name"
     onInput={checkNameConstraints}
   />
-
-  {#if role === "student"}
-    <div class="grid">
-      <label for="register-branch" class="label">
-        Branch
-        <select
-          id="register-branch"
-          bind:value={branch}
-          placeholder="Select your branch"
-        >
-          {#each ["CE", "IT", "AUTO", "EXTC", "ECS", "MECH", "ASM"] as branchOption}
-            <option value={branchOption}>{branchOption}</option>
-          {/each}
-        </select>
-      </label>
-
-      <label for="register-semester" class="label">
-        Semester
-        <select
-          id="register-semester"
-          bind:value={semester}
-          placeholder="Select your semester"
-        >
-          {#each Array.from({ length: 8 }, (_, i) => i + 1) as semesterOption}
-            <option value={semesterOption}>{semesterOption}</option>
-          {/each}
-        </select>
-      </label>
-
-      <label for="register-year" class="label">
-        Year
-        <input
-          id="register-year"
-          type="text"
-          bind:value={year}
-          readonly
-          placeholder="Year will be auto-calculated"
-        />
-      </label>
-
-      <script>
-        let branch = "CE";
-        let semester = "1";
-        let year = "1";
-
-        const updateYear = () => {
-          year = Math.ceil(semester / 2).toString();
-        };
-      </script>
-    </div>
-
-    <div class="grid">
-        <label for="register-division" class="label">
-            Division
-            <select
-                id="register-division"
-                bind:value={division}
-                placeholder="Select your division"
-            >
-                {#each ["A", "B", "C"] as divisionOption}
-                    <option value={divisionOption}>{divisionOption}</option>
-                {/each}
-            </select>
-        </label>
-
-        <label for="register-roll-number" class="label">
-            Roll Number
-            <select
-                id="register-roll-number"
-                bind:value={rollNumber}
-                placeholder="Select your roll number"
-            >
-                {#each Array.from({ length: 100 }, (_, i) => i + 1) as rollNumberOption}
-                    <option value={rollNumberOption}>{rollNumberOption}</option>
-                {/each}
-            </select>
-        </label>
-    </div>
-  {/if}
 
   <InputField
     id="register-password"
