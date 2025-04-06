@@ -18,8 +18,8 @@ def register():
     if not email or not password or not role:
         return jsonify({'message': 'missing one or more info'}), 400
 
-    if role == 'student' or role == 'admin':
-        branch, roll_no, year, semester, div = (response.get(key) for key in ('branch', 'roll_no', 'year', 'semester', 'div'))
+    # if role == 'student' or role == 'admin':
+    #     branch, roll_no, year, semester, div = (response.get(key) for key in ('branch', 'roll_no', 'year', 'semester', 'div'))
     
     data = {
         'email': email,
@@ -37,7 +37,7 @@ def register():
     
     requests = create_user(data)
 
-    if requests['error']:
+    if getattr(requests, 'error', False):
         return jsonify({'message': 'User already exists.'}), 400
 
     return jsonify({'message': 'User registered successfully.'}), 201
