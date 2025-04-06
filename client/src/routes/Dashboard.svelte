@@ -1,18 +1,35 @@
 <script>
   import { onMount } from "svelte";
-  import Sidebar from "../lib/dashboard/Sidebar.svelte";
+  import AllClassrooms from "../lib/dashboard/AllClassrooms.svelte";
+  import Classroom from "../lib/dashboard/classroom/Classroom.svelte";
+  import Sidebar from "../lib/dashboard/sidebar/Sidebar.svelte";
 
-  let classroomData = $state([]); // Initialize classroomData as an empty array
+  let classroomData = $state([]);
 
-  let menuOptions = [
-    { name: "Dashboard", icon: "fa-home" },
-    { name: "Classrooms", icon: "fa-chalkboard-teacher" },
-    { name: "Assignments", icon: "fa-tasks" },
-    { name: "Attendance", icon: "fa-user-check" },
-    { name: "Settings", icon: "fa-cog" },
-  ];
+  let menuOptions = $state([
+    {
+      subject: "All Classrooms",
+      id: "dashboard",
+    },
+  ]);
 
-  let activeMenu = $state("Dashboard"); // Initialize currentMenu with the default value
+  let activeMenu = $state("dashboard");
+
+  const findClassroomById = (id) => {
+    return classroomData.find((classroom) => classroom.g_id === id);
+  };
+
+  let activeClassroom = $derived(findClassroomById(activeMenu));
+
+  const setMenuOptionsWithClassrooms = (/** @type {any[]} */ classrooms) => {
+    menuOptions = [
+      ...menuOptions,
+      ...classrooms.map((classroom) => ({
+        subject: classroom.sub,
+        id: classroom.g_id,
+      })),
+    ];
+  };
 
   const getClassroomData = async () => {
     const response = await fetch(
@@ -24,6 +41,11 @@
     );
     if (response.ok) {
       classroomData = await response.json();
+      if (classroomData.length === 0) {
+        console.error("No classrooms found");
+        return;
+      }
+      setMenuOptionsWithClassrooms(classroomData);
     } else {
       console.error("Failed to fetch classroom data");
     }
@@ -43,46 +65,10 @@
 <main class="dashboard-layout">
   <Sidebar {menuOptions} bind:activeMenu />
   <main class="main-content">
-    {#if activeMenu === "Dashboard"}
-      <h1>Dashboard</h1>
-
-      <p>Here is your classroom data:</p>
-
-      <section class="grid">
-        {#each classroomData as classroom}
-          <article class="classroom-card">
-            <header>
-              <hgroup>
-                <h2>{classroom.branch} - Semester {classroom.semester}</h2>
-                <h3>{classroom.g_id}</h3>
-              </hgroup>
-            </header>
-            <p><strong>Division:</strong> {classroom.div}</p>
-            <p><strong>Subject:</strong> {classroom.sub}</p>
-            <footer>
-              <small
-                >Created at: {new Date(
-                  classroom.created_at
-                ).toLocaleString()}</small
-              >
-              <button
-                on:click={() => {
-                  console.log("Classroom ID:", classroom.g_id);
-                  // Add your logic to navigate to the classroom details page
-                }}>View Details</button
-              >
-            </footer>
-          </article>
-        {/each}
-      </section>
-    {:else if activeMenu === "Classrooms"}
-      <h1>Classrooms</h1>
-    {:else if activeMenu === "Assignments"}
-      <h1>Assignments</h1>
-    {:else if activeMenu === "Attendance"}
-      <h1>Attendance</h1>
-    {:else if activeMenu === "Settings"}
-      <h1>Settings</h1>
+    {#if activeMenu && activeMenu == "dashboard"}
+      <AllClassrooms {classroomData} bind:activeMenu />
+    {:else}
+      <Classroom {activeClassroom} {activeMenu} />
     {/if}
   </main>
 </main>
@@ -95,26 +81,6 @@
 
   .main-content {
     flex: 1;
-    padding: 1rem;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-  }
-
-  .classroom-card header {
-    margin-bottom: 0.5rem;
-  }
-
-  .classroom-card footer {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: #666;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    height: 100vh;
   }
 </style>
