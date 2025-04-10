@@ -1,0 +1,17 @@
+services:
+    - type: web
+      name: project-submission-api
+      env: python
+      plan: free
+      buildCommand: "pip install -r requirements.txt"
+      startCommand: "gunicorn server.run:app"
+      envVars:
+          - key: SUPABASE_URL
+            fromDotEnv: true
+          - key: SUPABASE_SERVICE_ROLE_KEY
+            fromDotEnv: true
+          - key: JWT_SECRET
+            fromDotEnv: true
+          - key: CORS_ORIGINS
+            fromDotEnv: true
+      autoDeploy: true
