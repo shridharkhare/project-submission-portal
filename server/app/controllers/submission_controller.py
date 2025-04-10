@@ -119,7 +119,7 @@ def get_all_submissions_by_g_id_db(user, g_id):
     except Exception as e:
         print(e)
         return None
-
+    
     submissions = response.data
     team_ids = [submission["team_id"] for submission in submissions]
 
@@ -127,7 +127,7 @@ def get_all_submissions_by_g_id_db(user, g_id):
     if response is None:
         return None
 
-    team_details = {team["id"]: team for team in response.data}
+    team_details = {team["team_id"]: team for team in response}
 
     submissions_with_team_details = [
         {**submission, "team_details": team_details[submission["team_id"]]}

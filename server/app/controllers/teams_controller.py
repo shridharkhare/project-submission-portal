@@ -1,5 +1,6 @@
 from flask import current_app, jsonify
 from app.controllers.users_controller import get_student
+# from app.controllers.submission_controller import get_all_submissions_by_g_id_db
 
 # ############################# Functions to create team #############################
 
@@ -356,13 +357,56 @@ def get_team_requests_db(user, g_id):
 
 
 def get_team_details_by_team_ids_db(team_ids):
-    """Gets all team details in the database by team_ids."""
+    """Gets all team details in the database by team_ids, including team members."""
     supabase = current_app.supabase
 
     try:
-        response = supabase.from_("teams").select("*").in_("id", team_ids).execute()
+        response = supabase.from_("team").select("div", "no_members", "team_no", "topic", "team_id").in_("team_id", team_ids).execute()
     except Exception as e:
         print(e)
         return None
 
-    return response.data
+    if not response or not response.data:
+        return None
+
+    team_details = response.data
+
+    # Fetch all team members for the given team_ids in one query
+    team_ids = [team["team_id"] for team in team_details]
+    try:
+        members_response = (
+            supabase.from_("student_team")
+            .select("team_id, student(name, roll_no, student_id)")
+            .in_("team_id", team_ids)
+            .execute()
+        )
+    except Exception as e:
+        print(e)
+        return None
+
+    # Organize members by team_id
+    members_by_team = {
+        item["team_id"]: [] for item in members_response.data
+    } if members_response and members_response.data else {}
+
+    for item in members_response.data or []:
+        if student := item.get("student"):
+            members_by_team[item["team_id"]].append(student)
+
+    # Append members to their respective teams
+    for team in team_details:
+        team["members"] = members_by_team.get(team["team_id"], [])
+
+    return team_details
+
+
+team_details =  {
+    "created_at": "2025-04-01T19:02:08.04307+00:00",
+    "div": "C",
+    "g_id": "CE_C_4_WP",
+    "leader_id": "CEC411",
+    "no_members": 1,
+    "team_id": "CE_C_4_WP_T01",
+    "team_no": 1,
+    "topic": "Idea Sharing Website"
+}

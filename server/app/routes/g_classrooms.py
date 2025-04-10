@@ -69,13 +69,15 @@ def get_g_classrooms(current_user):
 @token_required
 def create_g_classroom(current_user):
     """Create a g_classroom (protected route)"""
+    data = request.get_json()
+    
     response = None
+
     user = get_user(current_user)
 
     if current_user["role"] not in ["admin", "teacher"]:
         return jsonify({"message": "You are not authorized to create a class"}), 403
 
-    data = request.get_json()
     if not data:
         return jsonify({"message": "Invalid data"}), 400
 
@@ -224,13 +226,7 @@ def get_submissions_by_g_classroom(current_user, g_id, team_id):
 
     user = get_user(current_user)
 
-    # Fetch submission details based on role
-    if current_user["role"] == "admin":
-        response = get_all_submissions_by_g_id_db(user, g_id)
-    elif current_user["role"] == "student":
-        response = get_submission_db(user, team_id)
-    elif current_user["role"] == "teacher":
-        response = get_all_submissions_by_g_id_db(user, g_id)
+    response = get_submission_db(user, team_id)
 
     # Sends the submission details in json
     if not response:
@@ -279,3 +275,23 @@ def delete_submission(current_user, g_id, team_id):
 
     # Sends the submission details in json
     return jsonify("message: Submission deleted successfully"), 200
+
+@bp.route("/<string:g_id>/submissions", methods=["GET"])
+@token_required
+def get_submissions_by_g_classroom_for_teacher(current_user, g_id):
+    """Fetch all submissions in a g_classroom"""
+
+    user = get_user(current_user)
+
+    # Fetch submission details based on role
+    if current_user["role"] not in ["admin", "teacher"]:
+        return jsonify({"message": "You are not authorized to view submissions"}), 403
+    
+    response = get_all_submissions_by_g_id_db(user, g_id)
+
+    # Sends the submission details in json
+    if not response:
+        return jsonify({"message": "No submissions found"}), 404
+    
+    return jsonify(response), 200
+
