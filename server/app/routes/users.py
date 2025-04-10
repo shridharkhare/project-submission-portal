@@ -18,9 +18,7 @@ def register():
     if not email or not password or not role:
         return jsonify({'message': 'missing one or more info'}), 400
 
-    # if role == 'student' or role == 'admin':
-    #     branch, roll_no, year, semester, div = (response.get(key) for key in ('branch', 'roll_no', 'year', 'semester', 'div'))
-    
+
     data = {
         'email': email,
         'password': password,

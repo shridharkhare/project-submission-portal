@@ -231,14 +231,14 @@ def get_all_teams_by_gid(user, g_id):
         response = (
             supabase.from_("team")
             .select("*")
-            .match({"g_id": g_id, "uuid": user["uuid"]})
+            .match({"g_id": g_id})
             .execute()
         )
     except Exception as e:
         print(e)
         return None
 
-    return response.get("data")
+    return response.data
 
 
 def add_student_to_team(student_id, team_id):
