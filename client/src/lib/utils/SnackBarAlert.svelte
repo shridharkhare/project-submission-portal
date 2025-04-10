@@ -24,6 +24,7 @@
         animation:
             fadeIn 0.3s ease-out,
             fadeOut 0.3s ease-in 2.7s;
+        z-index: 1000;
     }
 
     .snackbar.success {
