@@ -10,6 +10,8 @@ def create_app():
 
     load_dotenv()
 
+
+
     cors_origins = os.getenv("CORS_ORIGINS", "")
 
     origins_list = [
@@ -20,7 +22,10 @@ def create_app():
 
     # Load configuration
     app.config.from_object("app.utils.config.Config")
-    # print(app.config)
+
+    # Load environment variables
+    app.config['ENV'] = os.getenv('FLASK_ENV', 'development')
+    app.config['IS_PROD'] = app.config['ENV'] == 'production'
 
     # Import and register blueprints
     from app.routes import welcome, authtoken, users, projects, g_classrooms, students, subjects

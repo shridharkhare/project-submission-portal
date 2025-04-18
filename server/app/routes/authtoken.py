@@ -31,13 +31,16 @@ def login():
 
     response = make_response(jsonify({'message': 'Login successful'}))
 
+    # Check for environment whether dev or prod
+    secure_cookie = current_app.config.get("IS_PROD", False)
+
     # Set the token in the cookie
     response.set_cookie(
         key='access_token',
         value=token,
         httponly=True,           # Prevent JavaScript access (XSS protection)
-        secure=False,             # Use HTTPS in production
-        samesite='Lax',          # Protect against CSRF
+        secure=secure_cookie,    # True in prod, False locally
+        samesite='None' if secure_cookie else 'Lax',  # Protect against CSRF, None for Hosted and Lax for local
         max_age=60 * 60 * 24 * 7 , # Expiry time (7 days)
         path= '/',
     )
